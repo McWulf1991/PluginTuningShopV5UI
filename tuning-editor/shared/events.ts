@@ -6,7 +6,6 @@ export const Tuningmenu_Events = {
     PREVIEW_TUNING_OPTICS: 'TuningMenu:Preview:Optics',
     PREVIEW_TUNING_INTERIOR: 'TuningMenu:Preview:Interior',
     PREVIEW_TUNING_WHEELS: 'TuningMenu:Preview:Wheels',
-    OPEN: 'TuningMenu:Open',
     PURCHASE: 'TuningMenu:Purchase:Tuning',
     PURCHASE_PLATE: 'TuningMenu:Purchase:Plate',
     PURCHASE_WINDOWTINT: 'TuningMenu:Purchase:Windowtint',
@@ -14,7 +13,10 @@ export const Tuningmenu_Events = {
     PURCHASE_OPTICS: 'TuningMenu:Purchase:Optics',
     PURCHASE_INTERIOR: 'TuningMenu:Purchase:Interior',
     PURCHASE_WHEELS: 'TuningMenu:Purchase:Wheels',
+    OPEN: 'TuningMenu:Open',
     CLOSE: 'TuningMenu:Close',
     CLIENT: 'TuningMenu:Client',
     SERVER: 'TuningMenu:Server',
+    PAY: 'TuningMenu:Pay',
+    UPDATE: 'TuningMenu:Update',
 };

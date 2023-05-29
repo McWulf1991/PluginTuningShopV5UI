@@ -8,9 +8,12 @@ import { CinematicCam } from './cinematic';
 import { KEY_BINDS_TUNER } from '../shared/const';
 import { TUNINGMENU_LOCALE } from '../shared/locales';
 import { name } from '@AthenaServer/player/get';
+import { onTicksStart } from '@AthenaClient/events/onTicksStart';
 
 let currentShop: string;
 let syncData: iTuningshopSync;
+let identification: number;
+
 
 async function init() {
     AthenaClient.systems.hotkeys.add({
@@ -30,88 +33,80 @@ async function emitClose() {
     alt.emitServer(Tuningmenu_Events.CLOSE);
 }
 
-async function buyPerformance(id: number, value: number, syncData: iTuningshopSync) {
-    const key = 13;
-    if (alt.isKeyDown(key)){
-        alt.emitServer(Tuningmenu_Events.PURCHASE, id, value)
-        alt.toggleGameControls(true);
-        AthenaClient.webview.setOverlaysVisible(true);
-        await AthenaClient.rmlui.menu.close();
-        createMenu(syncData);
-        CinematicCam.destroy()
+async function update(_id: number, value: number){
+
+    identification = _id
+    
+    if(identification = 0) {
+        camber(value);
+    }
+    if(identification = 1) {
+        height(value);
+    }
+    if(identification = 2) {
+        rimradius(value);
+    }
+    if(identification = 3) {
+        trackwidth(value);
+    }
+    if(identification = 4) {
+        tyreradius(value);
+    }
+    if(identification = 5) {
+        tyrewidth(value);
     }
 }
 
-async function buyStance(name: string, value: number, syncData: iTuningshopSync) {
-    const key = 13;
-    if (alt.isKeyDown(key)){
-        alt.emitServer(Tuningmenu_Events.PURCHASE_STANCE, name, value)
-        alt.toggleGameControls(true);
-        AthenaClient.webview.setOverlaysVisible(true);
-        await AthenaClient.rmlui.menu.close();
-        createMenu(syncData);
-        CinematicCam.destroy()
-    }
+async function pay(id: number, value: number) {
+    alt.LocalStorage.set('tune-pay-id-Tuning', id)
+    alt.LocalStorage.set('tune-pay-value-Tuning', value)
+    alt.LocalStorage.save()
 }
 
-async function buyOptics(id: number, value: number, syncData: iTuningshopSync) {
-    const key = 13;
-    if (alt.isKeyDown(key)){
-        alt.emitServer(Tuningmenu_Events.PURCHASE_OPTICS, id, value)
-        alt.toggleGameControls(true);
-        AthenaClient.webview.setOverlaysVisible(true);
-        await AthenaClient.rmlui.menu.close();
-        createMenu(syncData);
-        CinematicCam.destroy()
-    }
+async function payPl(value: number) {
+    alt.LocalStorage.set('tune-pay-value-Plate', value)
+    alt.LocalStorage.save()
 }
 
-async function buyInterior(id: number, value: number, syncData: iTuningshopSync) {
-    const key = 13;
-    if (alt.isKeyDown(key)){
-        alt.emitServer(Tuningmenu_Events.PURCHASE_INTERIOR, id, value)
-        alt.toggleGameControls(true);
-        AthenaClient.webview.setOverlaysVisible(true);
-        await AthenaClient.rmlui.menu.close();
-        createMenu(syncData);
-        CinematicCam.destroy()
-    }
+async function payWi(value: number) {
+    alt.LocalStorage.set('tune-pay-value-Window', value)
+    alt.LocalStorage.save()
 }
 
-async function buyWheels(id: number, value: number, syncData: iTuningshopSync) {
-    const key = 13;
-    if (alt.isKeyDown(key)){
-        alt.emitServer(Tuningmenu_Events.PURCHASE_WHEELS, id, value)
-        alt.toggleGameControls(true);
-        AthenaClient.webview.setOverlaysVisible(true);
-        await AthenaClient.rmlui.menu.close();
-        createMenu(syncData);
-        CinematicCam.destroy()
-    }
+async function payS(value: number, name: string) {
+    alt.LocalStorage.set('tune-pay-name-Stance', name)
+    alt.LocalStorage.set('tune-pay-value-Stance', value)
+    alt.LocalStorage.save()
 }
 
-async function buyPlate(value: number, syncData: iTuningshopSync) {
-    const key = 13;
-    if (alt.isKeyDown(key)){
-        alt.emitServer(Tuningmenu_Events.PURCHASE_PLATE, value)
-        alt.toggleGameControls(true);
-        AthenaClient.webview.setOverlaysVisible(true);
-        await AthenaClient.rmlui.menu.close();
-        createMenu(syncData);
-        CinematicCam.destroy()
-    }
+async function payW(id: number, value: number) {
+    const w = 'wheel';
+    alt.LocalStorage.set('tune-pay-Wheel', w)
+    alt.LocalStorage.set('tune-pay-id-Wheel', id)
+    alt.LocalStorage.set('tune-pay-value-Wheel', value)
+    alt.LocalStorage.save()
 }
 
-async function buyWindowtint(value: number, syncData: iTuningshopSync) {
-    const key = 13;
-    if (alt.isKeyDown(key)){
-        alt.emitServer(Tuningmenu_Events.PURCHASE_WINDOWTINT, value)
-        alt.toggleGameControls(true);
-        AthenaClient.webview.setOverlaysVisible(true);
-        await AthenaClient.rmlui.menu.close();
-        createMenu(syncData);
-        CinematicCam.destroy()
-    }
+async function buy() {
+    const id = alt.LocalStorage.get('tune-pay-id-Tuning');
+    const value = alt.LocalStorage.get('tune-pay-value-Tuning');
+    const valuepl = alt.LocalStorage.get('tune-pay-value-Plate');
+    const valuewi = alt.LocalStorage.get('tune-pay-value-Window');
+    const ids = alt.LocalStorage.get('tune-pay-name-Stance');
+    const values = alt.LocalStorage.get('tune-pay-value-Stance');
+    const wheel = alt.LocalStorage.get('tune-pay-Wheel');
+    const idw = alt.LocalStorage.get('tune-pay-id-Wheel');
+    const valuew = alt.LocalStorage.get('tune-pay-value-Wheel');
+    alt.emitServer(Tuningmenu_Events.PAY, id, value, valuepl, valuewi, ids, values, wheel, idw, valuew)
+    await alt.LocalStorage.delete('tune-pay-id-Tuning');
+    await alt.LocalStorage.delete('tune-pay-value-Tuning');
+    await alt.LocalStorage.delete('tune-pay-name-Stance');
+    await alt.LocalStorage.delete('tune-pay-value-Stance');
+    await alt.LocalStorage.delete('tune-pay-value-Plate');
+    await alt.LocalStorage.delete('tune-pay-value-Window');
+    await alt.LocalStorage.delete('tune-pay-Wheel');
+    await alt.LocalStorage.delete('tune-pay-id-Wheel');
+    await alt.LocalStorage.delete('tune-pay-value-Wheel');
 }
 
 async function camber(value: number) {
@@ -239,44 +234,28 @@ async function option(syncData: iTuningshopSync, shop: string) {
             options: [
                 {
                     type: 'Range',
-                    title: ShopExports.Performance[1],
+                    title: ShopExports.Performance[0],
                     description: TUNINGMENU_LOCALE.ENGINE_DESC,
                     value: 0,
                     min: 0,
                     max: 4,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 11;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, value)
+                    async callback(newValue: number) {
+                        const id = 11;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyPerformance(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -288,7 +267,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -299,7 +278,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -322,39 +301,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: 3,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 12;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, value)
+                    async callback(newValue: number) {
+                        const id = 12;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyPerformance(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -366,7 +328,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -377,7 +339,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -401,39 +363,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: 4,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 13;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, value)
+                    async callback(newValue: number) {
+                        const id = 13;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyPerformance(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -445,7 +390,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -456,7 +401,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -480,39 +425,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: 4,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 15;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, value)
+                    async callback(newValue: number) {
+                        const id = 15;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyPerformance(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -524,7 +452,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -535,7 +463,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -559,39 +487,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: 5,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 16;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, value)
+                    async callback(newValue: number) {
+                        const id = 16;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyPerformance(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -603,7 +514,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -614,7 +525,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -638,39 +549,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: 1,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 18;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, value)
+                    async callback(newValue: number) {
+                        const id = 18;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyPerformance(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -682,7 +576,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -693,7 +587,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -717,39 +611,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: 1,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 22;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, value)
+                    async callback(newValue: number) {
+                        const id = 22;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyPerformance(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -761,7 +638,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -772,7 +649,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -789,46 +666,29 @@ async function option(syncData: iTuningshopSync, shop: string) {
             options: [
                 {
                     type: 'Range',
-                    title: ShopExports.Stance[0][0],
+                    title: ShopExports.Stance[0],
                     description: TUNINGMENU_LOCALE.WHEELCAMBER_DESC,
                     value: 0,
                     min: -0.75,
                     max: 0.75,
                     increment: 0.01,
-                    async callback(name: string, value: number) {
-                        camber(value)
-                        name === TUNINGMENU_LOCALE.WHEELCAMBER
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, value)
+                    async callback(newValue: number) {
+                        camber(newValue)
+                        const name = TUNINGMENU_LOCALE.WHEELCAMBER
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, newValue)
+                        payS(newValue, name)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(name: string, value: number) {
-                        buyStance(name, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -840,7 +700,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -851,7 +711,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -869,46 +729,29 @@ async function option(syncData: iTuningshopSync, shop: string) {
             options: [
                 {
                     type: 'Range',
-                    title: ShopExports.Stance[1][1],
+                    title: ShopExports.Stance[1],
                     description: TUNINGMENU_LOCALE.WHEELHEIGHT_DESC,
                     value: 0,
                     min: -0.75,
                     max: 0.75,
                     increment: 0.01,
-                    async callback(name: string, value: number) {
-                        height(value)
-                        name === TUNINGMENU_LOCALE.WHEELHEIGHT;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, value)
+                    async callback(newValue: number) {
+                        height(newValue)
+                        const name = TUNINGMENU_LOCALE.WHEELHEIGHT;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, newValue)
+                        payS(newValue, name)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(name: string, value: number) {
-                        buyStance(name, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -920,7 +763,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -931,7 +774,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -949,46 +792,29 @@ async function option(syncData: iTuningshopSync, shop: string) {
             options: [
                 {
                     type: 'Range',
-                    title: ShopExports.Stance[2][2],
+                    title: ShopExports.Stance[2],
                     description: TUNINGMENU_LOCALE.WHEELRIMRADIUS_DESC,
                     value: 0,
                     min: -0.75,
                     max: 0.75,
                     increment: 0.01,
-                    async callback(name: string, value: number) {
-                        rimradius(value)
-                        name === TUNINGMENU_LOCALE.WHEELRIMRADIUS
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, value)
+                    async callback(newValue: number) {
+                        rimradius(newValue)
+                        const name = TUNINGMENU_LOCALE.WHEELRIMRADIUS
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, newValue)
+                        payS(newValue, name)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(name: string, value: number) {
-                        buyStance(name, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1000,7 +826,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1011,7 +837,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1029,46 +855,29 @@ async function option(syncData: iTuningshopSync, shop: string) {
             options: [
                 {
                     type: 'Range',
-                    title: ShopExports.Stance[3][3],
+                    title: ShopExports.Stance[3],
                     description: TUNINGMENU_LOCALE.WHEELTRACKWIDTH_DESC,
                     value: 0,
                     min: -0.75,
                     max: 0.75,
-                    increment: 1,
-                    async callback(name: string, value: number) {
-                        trackwidth(value)
-                        name === TUNINGMENU_LOCALE.WHEELTRACKWIDTH
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, value)
+                    increment: 0.01,
+                    async callback(newValue: number) {
+                        trackwidth(newValue)
+                        const name = TUNINGMENU_LOCALE.WHEELTRACKWIDTH
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, newValue)
+                        payS(newValue, name)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(name: string, value: number) {
-                        buyStance(name, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1080,7 +889,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1091,7 +900,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1109,47 +918,29 @@ async function option(syncData: iTuningshopSync, shop: string) {
             options: [
                 {
                     type: 'Range',
-                    title: ShopExports.Stance[4][4],
+                    title: ShopExports.Stance[4],
                     description: TUNINGMENU_LOCALE.WHEELTYRERADIUS_DESC,
                     value: 0,
                     min: -0.75,
                     max: 0.75,
                     increment: 0.01,
-                    async callback(name: string, value: number) {
-                        tyreradius(value)
-                        name === TUNINGMENU_LOCALE.WHEELTYRERADIUS
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, value)
-                        buyStance(name, value, syncData);
+                    async callback(newValue: number) {
+                        tyreradius(newValue)
+                        const name = TUNINGMENU_LOCALE.WHEELTYRERADIUS
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, newValue)
+                        payS(newValue, name)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(name: string, value: number) {
-                        buyStance(name, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1161,7 +952,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1172,7 +963,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1190,46 +981,29 @@ async function option(syncData: iTuningshopSync, shop: string) {
             options: [
                 {
                     type: 'Range',
-                    title: ShopExports.Stance[5][5],
+                    title: ShopExports.Stance[5],
                     description: TUNINGMENU_LOCALE.WHEELTYREWIDTH_DESC,
                     value: 0,
                     min: -0.75,
                     max: 0.75,
                     increment: 0.01,
-                    async callback(name: string, value: number) {
-                        tyrewidth(value)
-                        name === TUNINGMENU_LOCALE.WHEELTYREWIDTH
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, value)
+                    async callback(newValue: number) {
+                        tyrewidth(newValue)
+                        const name = TUNINGMENU_LOCALE.WHEELTYREWIDTH
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_STANCE, name, newValue)
+                        payS(newValue, name)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(name: string, value: number) {
-                        buyStance(name, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1241,7 +1015,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1252,7 +1026,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1277,38 +1051,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxspoiler,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 0;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 0;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1320,7 +1078,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1331,7 +1089,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1355,38 +1113,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxfbumper,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 1;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 1;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1398,7 +1140,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1409,7 +1151,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1433,38 +1175,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxrbumper,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 2;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 2;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1476,7 +1202,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1487,7 +1213,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1511,38 +1237,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxsskirt,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 3;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 3;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1554,7 +1264,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1565,7 +1275,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1589,38 +1299,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxexhaust,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 4;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 4;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1632,7 +1326,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1643,7 +1337,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1667,38 +1361,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxframe,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 5;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 5;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1710,7 +1388,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1721,7 +1399,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1745,38 +1423,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxgrille,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 6;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 6;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1788,7 +1450,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1799,7 +1461,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1823,38 +1485,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxhood,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 7;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 7;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1866,7 +1512,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1877,7 +1523,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1901,38 +1547,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxlwing,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 8;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 8;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -1944,7 +1574,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -1955,7 +1585,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -1979,38 +1609,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxrwing,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 9;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 9;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2022,7 +1636,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2033,7 +1647,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2057,38 +1671,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxroof,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 10;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 10;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2100,7 +1698,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2111,7 +1709,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2135,38 +1733,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxhorns,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 14;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 14;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2178,7 +1760,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2189,7 +1771,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2213,38 +1795,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxplateh,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 25;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 25;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2256,7 +1822,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2267,7 +1833,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2291,38 +1857,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxplatev,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 26;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 26;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2334,7 +1884,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2345,7 +1895,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2369,38 +1919,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxhydraulics,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 38;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 38;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2412,7 +1946,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2423,7 +1957,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2447,38 +1981,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxstrutbar,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 41;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 41;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2490,7 +2008,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2501,7 +2019,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2525,38 +2043,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxantenna,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 43;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 43;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2568,7 +2070,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2579,7 +2081,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2603,38 +2105,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxexteriorp,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 44;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 44;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2646,7 +2132,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2657,7 +2143,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2681,38 +2167,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxstickers,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 48;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, value)
+                    async callback(newValue: number) {
+                        const id = 48;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_OPTICS, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyOptics(id, value, syncData);
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2724,7 +2194,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2735,7 +2205,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2759,38 +2229,21 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxplate,
                     increment: 1,
-                    async callback(value: number) {
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_PLATE, value)
+                    async callback(newValue: number) {
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_PLATE, newValue)
+                        payPl(newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(value: number) {
-                        buyPlate(value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2802,7 +2255,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2813,7 +2266,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2837,38 +2290,21 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxwindowtint,
                     increment: 1,
-                    async callback(value: number) {
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WINDOWTINT, value)
+                    async callback(newValue: number) {
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WINDOWTINT, newValue)
+                        payWi(newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(value: number) {
-                        buyWindowtint(value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2880,7 +2316,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2891,7 +2327,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2915,39 +2351,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxtrimdesign,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 27;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 27;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -2959,7 +2378,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -2970,7 +2389,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -2994,39 +2413,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxornaments,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 28;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 28;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3038,7 +2440,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3049,7 +2451,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3073,39 +2475,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxdialdesign,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 30;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 30;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3117,7 +2502,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3128,7 +2513,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3152,39 +2537,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxdoorint,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 31;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 31;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3196,7 +2564,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3207,7 +2575,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3231,39 +2599,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxseats,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 32;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 32;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3275,7 +2626,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3286,7 +2637,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3310,39 +2661,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxsteeringw,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 33;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 33;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3354,7 +2688,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3365,7 +2699,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3389,39 +2723,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxshiftlever,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 34;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 34;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3433,7 +2750,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3444,7 +2761,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3468,39 +2785,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxplaques,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 35;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 35;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3512,7 +2812,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3523,7 +2823,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3547,39 +2847,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxengineb,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 39;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 39;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3591,7 +2874,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3602,7 +2885,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3626,39 +2909,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxairfilter,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 40;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 40;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3670,7 +2936,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3681,7 +2947,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3705,39 +2971,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxarchcover,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 42;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 42;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3749,7 +2998,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3760,7 +3009,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3784,39 +3033,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxtank,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 45;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 45;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3828,7 +3060,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3839,7 +3071,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3863,39 +3095,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxdoor,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 46;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 46;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3907,7 +3122,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3918,7 +3133,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -3942,39 +3157,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: syncData.maxwroh,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 47;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, value)
+                    async callback(newValue: number) {
+                        const id = 47;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, id, newValue)
+                        pay(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyInterior(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -3986,7 +3184,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -3997,7 +3195,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4021,39 +3219,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[0].Sport,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 0;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 0;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4065,7 +3246,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4076,7 +3257,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4100,39 +3281,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[1].Tuner,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 1;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 1;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4144,7 +3308,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4155,7 +3319,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4179,39 +3343,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[2].Lowrider,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 2;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 2;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4223,7 +3370,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4234,7 +3381,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4258,39 +3405,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[3].Luxus,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 3;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 3;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4302,7 +3432,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4313,7 +3443,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4337,39 +3467,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[4].Offroad,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 4;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 4;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4381,7 +3494,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4392,7 +3505,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4416,39 +3529,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[5].Cat5,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 5;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 5;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4460,7 +3556,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4471,7 +3567,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4495,39 +3591,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[6].Motorrad,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 6;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 6;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4539,7 +3618,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4550,7 +3629,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4574,39 +3653,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[7].HighEnd,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 7;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 7;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4618,7 +3680,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4629,7 +3691,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4653,39 +3715,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[8].Bennys,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 8;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 8;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4697,7 +3742,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4708,7 +3753,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4732,39 +3777,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[9].BennysOriginal,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 9;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 9;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4776,7 +3804,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4787,7 +3815,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4811,39 +3839,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[10].Formel1,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 10;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 10;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4855,7 +3866,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4866,7 +3877,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4890,39 +3901,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[11].Custom,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 11;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 11;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -4934,7 +3928,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -4945,7 +3939,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -4969,39 +3963,22 @@ async function option(syncData: iTuningshopSync, shop: string) {
                     min: 0,
                     max: ShopExports.wheelListCounts[12].StanceAndreas,
                     increment: 1,
-                    async callback(id: number, value: number) {
-                        id = 12;
-                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, value)
+                    async callback(newValue: number) {
+                        const id = 12;
+                        alt.emitServer(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, id, newValue)
+                        payW(id, newValue)
                     }
                 },
                 {
                     type: 'Invoke',
                     title: 'Buy',
-                    description: 'Buy the selected option',
-                    async callback(id: number, value: number) {
-                        buyWheels(id, value, syncData)
-                    },
-                },
-                {
-                    type: 'Range',
-                    title: 'Camera',
-                    description: 'Ändert die Kameraeinstellungen',
-                    value:90,
-                    min:50,
-                    max:150,
-                    increment:1,
-                    onlyUpdateOnEnter: true,
-                    async callback(newValue: number) {
-                        const points = generateCameraPoints();
-                        for (let i = 0; i < points.length; i++) {
-                            CinematicCam.addNode({
-                                pos: points[i],
-                                fov: newValue,
-                                easeTime: 1000,
-                                positionToTrack: alt.Player.local.vehicle.pos,
-                            });
-                        }
-                        CinematicCam.next(false);
+                    description: 'Buy the option.',
+                    async callback() {
+                        alt.toggleGameControls(true);
+                        AthenaClient.webview.setOverlaysVisible(true);
+                        await AthenaClient.rmlui.menu.close();
+                        buy()
+                        createMenu(syncData)
                     },
                 },
                 {
@@ -5013,7 +3990,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         AthenaClient.webview.setOverlaysVisible(true);
                         await AthenaClient.rmlui.menu.close();
                         createMenu(syncData);
-                        CinematicCam.destroy()
+
                     },
                 },
                 {
@@ -5024,7 +4001,7 @@ async function option(syncData: iTuningshopSync, shop: string) {
                         alt.toggleGameControls(true);
                         AthenaClient.webview.setOverlaysVisible(true);
                         AthenaClient.rmlui.menu.close();
-                        CinematicCam.destroy()
+
                     },
                 },
             ],
@@ -5043,19 +4020,6 @@ async function createMenu(_syncData: iTuningshopSync) {
     if(!syncData) return;
     AthenaClient.webview.setOverlaysVisible(false);
     alt.toggleGameControls(false);
-
-    const points = generateCameraPoints();
-    CinematicCam.destroy();
-    for (let i = 0; i < points.length; i++) {
-        CinematicCam.addNode({
-            pos: points[i],
-            fov: 90,
-            easeTime: 1000,
-            positionToTrack: alt.Player.local.vehicle.pos,
-        });
-    }
-
-    CinematicCam.next(false);
 
     AthenaClient.rmlui.menu.create({
         header: {
@@ -5080,7 +4044,7 @@ async function createMenu(_syncData: iTuningshopSync) {
                 type: 'Selection',
                 title: TUNINGMENU_LOCALE.STANCE,
                 description: TUNINGMENU_LOCALE.STANCE_DESC,
-                options: ShopExports.StanceCleaned,
+                options: ShopExports.Stance,
                 value: 0,
                 onlyUpdateOnEnter: true,
                 async callback(newValue: string) {
@@ -5129,27 +4093,6 @@ async function createMenu(_syncData: iTuningshopSync) {
                 },
             },
             {
-                type: 'Range',
-                title: 'Camera',
-                description: 'Ändert die Kameraeinstellungen',
-                value:90,
-                min:50,
-                max:150,
-                increment:1,
-                onlyUpdateOnEnter: true,
-                async callback(newValue: number) {
-                    for (let i = 0; i < points.length; i++) {
-                        CinematicCam.addNode({
-                            pos: points[i],
-                            fov: newValue,
-                            easeTime: 1000,
-                            positionToTrack: alt.Player.local.vehicle.pos,
-                        });
-                    }
-                    CinematicCam.next(false)
-                },
-            },
-            {
                 type: 'Invoke',
                 title: 'Close',
                 description: 'Close the menu.',
@@ -5157,7 +4100,6 @@ async function createMenu(_syncData: iTuningshopSync) {
                     alt.toggleGameControls(true);
                     AthenaClient.webview.setOverlaysVisible(true);
                     AthenaClient.rmlui.menu.close();
-                    CinematicCam.destroy()
                 },
             },
         ],
@@ -5247,3 +4189,4 @@ function generateCameraPoints(): Array<alt.IVector3> {
 
 alt.onServer(Tuningmenu_Events.OPEN, init);
 alt.onServer(Tuningmenu_Events.SERVER, createMenu);
+alt.onServer(Tuningmenu_Events.UPDATE, update);

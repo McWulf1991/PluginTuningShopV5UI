@@ -9,7 +9,9 @@ import { TUNING_SHOPS } from './shops';
 import { Tuningmenu_Events } from '../../shared/events';
 import { TUNINGMENU_LOCALE } from '../../shared/locales';
 import { VehicleState } from '@AthenaShared/interfaces/vehicleState';
-import { NumberPlateStyle } from 'alt-server';
+import { getStance, getWheels } from '@AthenaServer/vehicle/tuning';
+import { CurrencyTypes } from '@AthenaShared/enums/currency';
+import { RGBA } from 'alt-server';
 
 const shops: Array<ITuningShop> = [];
 const inShop = {};
@@ -30,7 +32,36 @@ class InternalFunctions {
 
         for (let i = 0; i < veh2.tuning.wheels.length; i++) {
             const vehmods = veh2.tuning.wheels[i]; 
+            alt.log('--- WHEELS | ID --- '+vehmods.id)
+            alt.log('--- WHEELS | VALUE --- '+vehmods.value)
             player.vehicle.setWheels(vehmods.id, vehmods.value)
+        }
+
+        for (let i = 0; i < veh2.tuning.stance.length; i++) {
+            const vehmods = veh2.tuning.stance[i];
+
+            alt.log('--- WHEELMOD | NAME --- '+vehmods.id)
+            alt.log('--- WHEELMOD | VALUE --- '+vehmods.value)
+
+            if(vehmods.id=0){
+                vehicle.setStreamSyncedMeta('wheelModCamber', vehmods.value)
+            };
+            if(vehmods.id=1){
+                vehicle.setStreamSyncedMeta('wheelModHeight', vehmods.value)
+            };
+            if(vehmods.id=2){
+                vehicle.setStreamSyncedMeta('wheelModRimRadius', vehmods.value)
+            };
+            if(vehmods.id=3){
+                vehicle.setStreamSyncedMeta('wheelModTrackWidth', vehmods.value)
+            };
+            if(vehmods.id=4){
+                vehicle.setStreamSyncedMeta('wheelModTyreRadius', vehmods.value)
+            };
+            if(vehmods.id=5){
+                vehicle.setStreamSyncedMeta('wheelModTyreWidth', vehmods.value)
+            };
+            alt.emitClient(player, Tuningmenu_Events.UPDATE, vehmods.id , vehmods.value)
         }
 
         player.vehicle.windowTint = veh2.state.windowTint;
@@ -52,6 +83,7 @@ class InternalFunctions {
 
         if (value && id) {
             player.vehicle.setMod(id, value)
+            // TuningShopView.purchase(player, id, value)
         } else if (value && !id) {
             return;
         } else if (!value && !id) {
@@ -75,6 +107,7 @@ class InternalFunctions {
 
         if (value) {
             player.vehicle.numberPlateIndex === value;
+            // TuningShopView.purchasePlate(player, value)
         } else {
             return;
         }
@@ -94,6 +127,7 @@ class InternalFunctions {
 
         if (value) {
             player.vehicle.windowTint === value;
+            // TuningShopView.purchaseWindowtint(player, value)
         } else {
             return;
         }
@@ -101,7 +135,7 @@ class InternalFunctions {
 
     static previewTuningStance(
         player: alt.Player,
-        number: number,
+        name: string,
         value: number,
     ) {
         if (!inShop[player.id]) {
@@ -114,19 +148,21 @@ class InternalFunctions {
 
         if(!value) return;
 
-        if(number == 1) {
+        if(name === TUNINGMENU_LOCALE.WHEELCAMBER) {
             player.vehicle.setStreamSyncedMeta("wheelModCamber", value)
-        } else if(number == 2) {
+        } else if(name === TUNINGMENU_LOCALE.WHEELHEIGHT) {
             player.vehicle.setStreamSyncedMeta('wheelModHeight', value)
-        } else if(number == 3) {
+        } else if(name === TUNINGMENU_LOCALE.WHEELRIMRADIUS) {
             player.vehicle.setStreamSyncedMeta('wheelModRimRadius', value)
-        } else if(number == 4) {
+        } else if(name === TUNINGMENU_LOCALE.WHEELTRACKWIDTH) {
             player.vehicle.setStreamSyncedMeta('wheelModTrackWidth', value)
-        } else if(number == 5) {
+        } else if(name === TUNINGMENU_LOCALE.WHEELTYRERADIUS) {
             player.vehicle.setStreamSyncedMeta('wheelModTyreRadius', value)
-        } else if(number == 6) {
+        } else if(name === TUNINGMENU_LOCALE.WHEELTYREWIDTH) {
             player.vehicle.setStreamSyncedMeta('wheelModTyreWidth', value)
         }
+
+        // TuningShopView.purchaseStance(player, name, value)
     }
 
     static previewTuningOptics(
@@ -144,6 +180,7 @@ class InternalFunctions {
 
         if (value && id) {
             player.vehicle.setMod(id, value)
+            // TuningShopView.purchaseOptics(player, id, value)
         } else if (!value) {
             return;
         } 
@@ -164,6 +201,7 @@ class InternalFunctions {
 
         if (value && id) {
             player.vehicle.setMod(id, value)
+            // TuningShopView.purchaseInterior(player, id, value)
         } else if (!value) {
             return;
         }
@@ -184,6 +222,7 @@ class InternalFunctions {
 
         if (value && id) {
             player.vehicle.setWheels(id, value)
+            // TuningShopView.purchaseWheels(player, id, value)
         } else if (!value && !id) {
             return;
         }
@@ -204,14 +243,10 @@ export class TuningShopView {
         alt.onClient(Tuningmenu_Events.PREVIEW_TUNING_INTERIOR, InternalFunctions.previewTuningInterior);
         alt.onClient(Tuningmenu_Events.PREVIEW_TUNING_WHEELS, InternalFunctions.previewTuningWheels);
         alt.onClient(Tuningmenu_Events.CLIENT, TuningShopView.open)
-        alt.onClient(Tuningmenu_Events.PURCHASE, TuningShopView.purchase);
-        alt.onClient(Tuningmenu_Events.PURCHASE_PLATE, TuningShopView.purchasePlate);
-        alt.onClient(Tuningmenu_Events.PURCHASE_WINDOWTINT, TuningShopView.purchaseWindowtint);
-        alt.onClient(Tuningmenu_Events.PURCHASE_STANCE, TuningShopView.purchaseStance);
-        alt.onClient(Tuningmenu_Events.PURCHASE_OPTICS, TuningShopView.purchaseOptics);
-        alt.onClient(Tuningmenu_Events.PURCHASE_INTERIOR, TuningShopView.purchaseInterior);
-        alt.onClient(Tuningmenu_Events.PURCHASE_WHEELS, TuningShopView.purchaseWheels);
+        alt.onClient(Tuningmenu_Events.UPDATE, InternalFunctions.updateTuning)
         alt.onClient(Tuningmenu_Events.CLOSE, TuningShopView.close);
+        alt.onClient(Tuningmenu_Events.PAY, TuningShopView.payTuning);
+        
     }
 
     static close(player: alt.Player) {
@@ -224,6 +259,8 @@ export class TuningShopView {
     }
 
     static register(shop: ITuningShop): string {
+        let player: alt.Player;
+
         if (!shop.uid) {
             shop.uid = sha256Random(JSON.stringify(shop));
         }
@@ -264,7 +301,7 @@ export class TuningShopView {
             });
         }
 
-        
+        InternalFunctions.updateTuning;
 
         polygon.addEnterCallback(TuningShopView.enter);
         polygon.addLeaveCallback(TuningShopView.leave);
@@ -332,8 +369,8 @@ export class TuningShopView {
         }
 
         const info = await Athena.vehicle.tuning.getMods(player.vehicle);
-        const stance = await Athena.vehicle.tuning.getStance(player.vehicle);
-        const wheels = await Athena.vehicle.tuning.getWheels(player.vehicle);
+        const stance = await getStance(player.vehicle);
+        const wheels = await getWheels(player.vehicle);
         const plate = await player.vehicle.numberPlateIndex;
         const windowtint = await player.vehicle.windowTint;
         const maxspoiler = await player.vehicle.getModsCount(0)
@@ -425,12 +462,12 @@ export class TuningShopView {
                 stickers: info[48].value,
                 plate: plate,
                 windowtint: windowtint,
-                wheelcamber: stance.camber,
-                wheelheight: stance.height,
-                wheeltrackwidth: stance.trackwidth,
-                wheelrimradius: stance.rimradius,
-                wheeltyrewidth: stance.tyrewidth,
-                wheeltyreradius: stance.tyreradius,
+                wheelcamber: stance[0].value,
+                wheelheight: stance[1].value,
+                wheeltrackwidth: stance[2].value,
+                wheelrimradius: stance[3].value,
+                wheeltyrewidth: stance[4].value,
+                wheeltyreradius: stance[5].value,
                 wheeltype: wheels[wheelmodify].id,
                 wheelid: wheels[wheelmodify].value,
                 maxspoiler: maxspoiler,
@@ -513,7 +550,8 @@ export class TuningShopView {
         
         const tuningData: IVehicleTuning = Athena.vehicle.tuning.getTuning(player.vehicle);
         Athena.document.vehicle.set(player.vehicle, 'tuning', tuningData);
-        InternalFunctions.updateTuning(player, player.vehicle);
+        // InternalFunctions.updateTuning(player, player.vehicle);
+        player.vehicle.frozen === false;
 
     }
 
@@ -550,7 +588,8 @@ export class TuningShopView {
 
         const stateData: VehicleState = Athena.vehicle.tuning.applyState(player.vehicle, numberPlateState);
         Athena.document.vehicle.set(player.vehicle, 'state', stateData);
-        InternalFunctions.updateTuning(player, player.vehicle);
+        // InternalFunctions.updateTuning(player, player.vehicle);
+        player.vehicle.frozen === false;
     }
 
     static purchaseWindowtint(
@@ -586,7 +625,8 @@ export class TuningShopView {
 
         const stateData: VehicleState = Athena.vehicle.tuning.applyState(player.vehicle, windowTintState);
         Athena.document.vehicle.set(player.vehicle, 'state', stateData);
-        InternalFunctions.updateTuning(player, player.vehicle);
+        // InternalFunctions.updateTuning(player, player.vehicle);
+        player.vehicle.frozen === false;
     }
 
     static purchaseStance(
@@ -615,6 +655,8 @@ export class TuningShopView {
         if (!player.vehicle.modKit) {
             player.vehicle.modKit = 1;
         }
+        alt.log('--- WHEELMOD | NAME --- '+name)
+        alt.log('--- WHEELMOD | VALUE --- '+value)
         
         if(name === TUNINGMENU_LOCALE.WHEELCAMBER) {
             if (value !== undefined && value !== null) {
@@ -648,81 +690,8 @@ export class TuningShopView {
         }
         const tuningData: IVehicleTuning = Athena.vehicle.tuning.getTuning(player.vehicle);
         Athena.document.vehicle.set(player.vehicle, 'tuning', tuningData);
-        InternalFunctions.updateTuning(player, player.vehicle);
-
-    }
-
-    static purchaseOptics(
-        player: alt.Player,
-        id: number,
-        value: number,
-    ) {
-        const veh = Athena.document.vehicle.get(player.vehicle);
-        if (!player.vehicle || player.vehicle.driver !== player) {
-            return;
-        }
-
-        if (!inShop[player.id]) {
-            return;
-        }
-
-        if (Athena.vehicle.tempVehicles.has(player.vehicle)) {
-            return;
-        }
-
-        const playerData = Athena.document.character.get(player);
-        if (veh.owner !== playerData._id) {
-            return;
-        }
-
-        if (!player.vehicle.modKit) {
-            player.vehicle.modKit = 1;
-        }
-
-        if (value !== undefined && value !== null) {
-            player.vehicle.setMod(id, value);
-        }
-        
-        const tuningData: IVehicleTuning = Athena.vehicle.tuning.getTuning(player.vehicle);
-        Athena.document.vehicle.set(player.vehicle, 'tuning', tuningData);
-        InternalFunctions.updateTuning(player, player.vehicle);
-
-    }
-
-    static purchaseInterior(
-        player: alt.Player,
-        id: number,
-        value: number,
-    ) {
-        const veh = Athena.document.vehicle.get(player.vehicle);
-        if (!player.vehicle || player.vehicle.driver !== player) {
-            return;
-        }
-
-        if (!inShop[player.id]) {
-            return;
-        }
-
-        if (Athena.vehicle.tempVehicles.has(player.vehicle)) {
-            return;
-        }
-
-        const playerData = Athena.document.character.get(player);
-        if (veh.owner !== playerData._id) {
-            return;
-        }
-
-        if (!player.vehicle.modKit) {
-            player.vehicle.modKit = 1;
-        }
-
-        if (value !== undefined && value !== null) {
-            player.vehicle.setMod(id, value);
-        }
-        
-        const tuningData: IVehicleTuning = Athena.vehicle.tuning.getTuning(player.vehicle);
-        Athena.document.vehicle.set(player.vehicle, 'tuning', tuningData);
-        InternalFunctions.updateTuning(player, player.vehicle);
+        // InternalFunctions.updateTuning(player, player.vehicle);
+        player.vehicle.frozen === false;
 
     }
 
@@ -759,6 +728,116 @@ export class TuningShopView {
         
         const tuningData: IVehicleTuning = Athena.vehicle.tuning.getTuning(player.vehicle);
         Athena.document.vehicle.set(player.vehicle, 'tuning', tuningData);
-        InternalFunctions.updateTuning(player, player.vehicle);
+        // InternalFunctions.updateTuning(player, player.vehicle);
+        player.vehicle.frozen === false;
+    }
+
+    static async payTuning(player: alt.Player, id: number, value: number, valuepl: number, valuewi: number, ids: string, values: number, wheel: string, idw: number, valuew: number){
+        const priceTuning: number[] = [ 2000, 3000, 2500, 1500, 1000, 1800, 1200, 2200, 2000, 2000, 1000, 5000, 3000, 3500, 500, 2000, 3000, 2500, 1000, 1500, 800, 800, 500, 800, 1000, 500, 1000, 2000, 1200, 800, 800, 1000, 1500, 1500, 1200, 800, 1000, 1200, 500, 1000, 1200, 1500, 1500, 2000]
+
+        function generateRandomNumber(min: number, max: number): number {
+            const randomNumber = Math.random() * (max - min) + min;
+            return Math.floor(randomNumber);
+        }
+
+        const min = 100;
+        const max = 5000;
+        const randomNum = generateRandomNumber(min, max);
+        const pwid = 14
+        const sid = 14
+        const wid = 15
+
+        alt.log('DATA: ')
+        alt.log('---Player--- '+player.id)
+        alt.log('---TuningID--- '+id)
+        alt.log('---TuningValue--- '+value)
+        alt.log('---PlateValue--- '+valuepl)
+        alt.log('---WindowTintValue--- '+valuewi)
+        alt.log('---StanceID--- '+ids)
+        alt.log('---StanceValue--- '+values)
+        alt.log('---WheelCollection--- '+wheel)
+        alt.log('---WheelID--- '+idw)
+        alt.log('---WheelValue--- '+valuew)
+        
+
+        if(id){
+            const finalPrice = priceTuning[id] + randomNum;
+            Athena.player.currency.sub(player, CurrencyTypes.BANK, finalPrice);
+            player.vehicle.frozen === true;
+            await Athena.player.emit.createProgressBar(player, {
+                color: new RGBA(200, 200, 10, 255),
+                distance: 5,
+                milliseconds: 10000,
+                text: TUNINGMENU_LOCALE.TUNING_PROGRESS,
+                position:new alt.Vector3(player.pos.x, player.pos.y, player.pos.z)
+            });
+            Athena.player.emit.message(player, 'Du hast für das Tuning '+ finalPrice +'$ bezahlt. Gute Fahrt!')
+            TuningShopView.purchase(player, id, value)
+            return;
+        }
+
+        if(valuepl){
+            const finalPrice = priceTuning[pwid] + randomNum;
+            Athena.player.currency.sub(player, CurrencyTypes.BANK, finalPrice);
+            player.vehicle.frozen === true;
+            await Athena.player.emit.createProgressBar(player, {
+                color: new RGBA(200, 200, 10, 255),
+                distance: 5,
+                milliseconds: 10000,
+                text: TUNINGMENU_LOCALE.TUNING_PROGRESS,
+                position:new alt.Vector3(player.pos.x, player.pos.y, player.pos.z)
+            });
+            Athena.player.emit.message(player, 'Du hast für das Tuning '+ finalPrice +'$ bezahlt. Gute Fahrt!')
+            TuningShopView.purchasePlate(player, valuepl)
+            return;
+        }
+
+        if(valuewi){
+            const finalPrice = priceTuning[pwid] + randomNum;
+            Athena.player.currency.sub(player, CurrencyTypes.BANK, finalPrice);
+            player.vehicle.frozen === true;
+            await Athena.player.emit.createProgressBar(player, {
+                color: new RGBA(200, 200, 10, 255),
+                distance: 5,
+                milliseconds: 10000,
+                text: TUNINGMENU_LOCALE.TUNING_PROGRESS,
+                position:new alt.Vector3(player.pos.x, player.pos.y, player.pos.z)
+            });
+            Athena.player.emit.message(player, 'Du hast für das Tuning '+ finalPrice +'$ bezahlt. Gute Fahrt!')
+            TuningShopView.purchaseWindowtint(player, valuewi)
+            return;
+        }
+
+        if(ids){
+            const finalPrice = priceTuning[sid] + randomNum;
+            Athena.player.currency.sub(player, CurrencyTypes.BANK, finalPrice);
+            player.vehicle.frozen === true;
+            await Athena.player.emit.createProgressBar(player, {
+                color: new RGBA(200, 200, 10, 255),
+                distance: 5,
+                milliseconds: 10000,
+                text: TUNINGMENU_LOCALE.STANCE_PROGRESS,
+                position:new alt.Vector3(player.pos.x, player.pos.y, player.pos.z)
+            });
+            Athena.player.emit.message(player, 'Du hast für das Tuning '+ finalPrice +'$ bezahlt. Gute Fahrt!')
+            TuningShopView.purchaseStance(player, ids, values)
+            return;
+        }
+
+        if(wheel) {
+            const finalPrice = priceTuning[wid] + randomNum;
+            Athena.player.currency.sub(player, CurrencyTypes.BANK, finalPrice);
+            player.vehicle.frozen === true;
+            await Athena.player.emit.createProgressBar(player, {
+                color: new RGBA(200, 200, 10, 255),
+                distance: 5,
+                milliseconds: 10000,
+                text: TUNINGMENU_LOCALE.WHEELS_PROGRESS,
+                position:new alt.Vector3(player.pos.x, player.pos.y, player.pos.z)
+            });
+            Athena.player.emit.message(player, 'Du hast für das Tuning '+ finalPrice +'$ bezahlt. Gute Fahrt!')
+            TuningShopView.purchaseWheels(player, idw, valuew)
+            return;
+        }
     }
 }

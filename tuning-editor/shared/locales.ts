@@ -7,6 +7,10 @@ export const TUNINGMENU_LOCALE = {
     PERFORMANCE: 'Performance',
     INTERIEUR: 'Interieur',
 
+    TUNING_PROGRESS: 'Baue Teile ein...',
+    STANCE_PROGRESS: 'Stance updating...',
+    WHEELS_PROGRESS: 'Felgen werden gewechselt...',
+
     OPTIC_DESC: 'Ändert die Optik des Fahrzeuges',
     STANCE_DESC: 'Sturzeinstellung des Autos',
     WHEELS_DESC: 'Ändert die Felgen des Autos',

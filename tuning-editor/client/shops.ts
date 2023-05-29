@@ -55,7 +55,7 @@ export const Interior = [
     "Radhausverkleidung",
 ]
 
-export const Stance = [
+export const StanceCleaned = [
   {0: 'Radsturz'},
   {1: 'Radhöhe'},
   {2: 'Felgenradius'},
@@ -64,7 +64,7 @@ export const Stance = [
   {5: 'Reifenbreite'},
 ].sort();
 
-export const StanceCleaned = [
+export const Stance = [
     "Radsturz",
     "Radhöhe",
     "Felgenradius",
@@ -82,11 +82,6 @@ export const Performance = [
     "Turbo",
     "Xenon-Licht",
 ]
-
-export const Wheels = [
-    "Felgentyp",
-    "Felgen-ID"
-].sort();
 
 export const OpticsString = {
   0: "Spoiler",
