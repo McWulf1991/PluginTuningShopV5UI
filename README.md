@@ -1,6 +1,3 @@
-# PluginTuningShopV5UI
-Created a Tuning Shop Menu with rmlui for V5.1.0 Athena Framework by Stuyk.
-
 -TO-DO-
 
 tuning.ts : liegt in 'src/core/server/vehicle' und beinhaltet neue funktionen bzgl. des Tunings von Stance und Wheels, zum sichern in der Datenbank.
@@ -24,6 +21,4 @@ vertices: [
     new alt.Vector3({ x:849.0205688476562, y:-927.2130126953125, z:26.282373428344727 }),
 ],
 
-Kameraführung: Hier muss noch ausreichend getestet werden, ab und an reagiert die Kamera ohne das effektiv ein Nutzerinput erfolgt.
-
-Testing: Umbenennung der Kategorien müssen vorgenommen werden da die Zuordnung noch nicht exakt stimmt. (Auswahl von Motor -> Turbomenü wird geöffnet).
+Update-Tuning und Laden beim Starten des Servers funktioniert noch nicht entsprechend. Fixes kommen...
