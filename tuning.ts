@@ -94,22 +94,22 @@ export function applyTuning(vehicle: alt.Vehicle, tuning: VehicleTuning | Partia
 
     if (tuning.stance) {
         for (let stanced of tuning.stance) {
-            if(stanced.id=0){
+            if(stanced.id==0){
                 vehicle.setStreamSyncedMeta('wheelModCamber', stanced.value)
             };
-            if(stanced.id=1){
+            if(stanced.id==1){
                 vehicle.setStreamSyncedMeta('wheelModHeight', stanced.value)
             };
-            if(stanced.id=2){
+            if(stanced.id==2){
                 vehicle.setStreamSyncedMeta('wheelModRimRadius', stanced.value)
             };
-            if(stanced.id=3){
+            if(stanced.id==3){
                 vehicle.setStreamSyncedMeta('wheelModTrackWidth', stanced.value)
             };
-            if(stanced.id=4){
+            if(stanced.id==4){
                 vehicle.setStreamSyncedMeta('wheelModTyreRadius', stanced.value)
             };
-            if(stanced.id=5){
+            if(stanced.id==5){
                 vehicle.setStreamSyncedMeta('wheelModTyreWidth', stanced.value)
             };
         }
@@ -141,37 +141,38 @@ export function getTuning(vehicle: alt.Vehicle): VehicleTuning {
         tuningData.mods.push({ id, value });
     }
 
-    for (let id = 0; id < 13; ++id) {
-        let value = vehicle.getMod(id);
-        tuningData.wheels.push({id, value});
-    }
+    // for (let id = 0; id < 13; ++id) {
+        let value = vehicle.getMod(23);
+        tuningData.wheels.push({id:0, value});
+        tuningData.wheels.push({id:1, value});
+        tuningData.wheels.push({id:2, value});
+        tuningData.wheels.push({id:3, value});
+        tuningData.wheels.push({id:4, value});
+        tuningData.wheels.push({id:5, value});
+        tuningData.wheels.push({id:6, value});
+        tuningData.wheels.push({id:7, value});
+        tuningData.wheels.push({id:8, value});
+        tuningData.wheels.push({id:9, value});
+        tuningData.wheels.push({id:10, value});
+        tuningData.wheels.push({id:11, value});
+        tuningData.wheels.push({id:12, value});
+        tuningData.wheels.push({id:13, value});
+    // }
 
-    for (let id = 0; id < 5; ++id) {
-        if(id=0){
-            let value = vehicle.getStreamSyncedMeta('wheelModCamber') as number
-            tuningData.stance.push({id, value});
-        };
-        if(id=1){
-            let value = vehicle.getStreamSyncedMeta('wheelModHeight') as number
-            tuningData.stance.push({id, value});
-        };
-        if(id=2){
-            let value = vehicle.getStreamSyncedMeta('wheelModRimRadius') as number
-            tuningData.stance.push({id, value});
-        };
-        if(id=3){
-            let value = vehicle.getStreamSyncedMeta('wheelModTrackWidth') as number
-            tuningData.stance.push({id, value});
-        };
-        if(id=4){
-            let value = vehicle.getStreamSyncedMeta('wheelModTyreRadius') as number
-            tuningData.stance.push({id, value});
-        };
-        if(id=5){
-            let value = vehicle.getStreamSyncedMeta('wheelModTyreWidth') as number
-            tuningData.stance.push({id, value});
-        };
-    }
+    // for (let id = 0; id < 5; ++id) {
+            let value0 = vehicle.getStreamSyncedMeta('wheelModCamber') as number
+            tuningData.stance.push({id:0, value:value0});
+            let value1 = vehicle.getStreamSyncedMeta('wheelModHeight') as number
+            tuningData.stance.push({id:1, value:value1});
+            let value2 = vehicle.getStreamSyncedMeta('wheelModRimRadius') as number
+            tuningData.stance.push({id:2, value:value2});
+            let value3 = vehicle.getStreamSyncedMeta('wheelModTrackWidth') as number
+            tuningData.stance.push({id:3, value:value3});
+            let value4 = vehicle.getStreamSyncedMeta('wheelModTyreRadius') as number
+            tuningData.stance.push({id:4, value:value4});
+            let value5 = vehicle.getStreamSyncedMeta('wheelModTyreWidth') as number
+            tuningData.stance.push({id:5, value:value5});
+    // }
 
     return tuningData;
 }
@@ -224,22 +225,22 @@ export async function applyMods(vehicle: alt.Vehicle, modkit: number, mods: Arra
         }
 
         try {
-            if(stanced.id=0){
+            if(stanced.id==0){
                 vehicle.setStreamSyncedMeta('wheelModCamber', stanced.value)
             };
-            if(stanced.id=1){
+            if(stanced.id==1){
                 vehicle.setStreamSyncedMeta('wheelModHeight', stanced.value)
             };
-            if(stanced.id=2){
+            if(stanced.id==2){
                 vehicle.setStreamSyncedMeta('wheelModRimRadius', stanced.value)
             };
-            if(stanced.id=3){
+            if(stanced.id==3){
                 vehicle.setStreamSyncedMeta('wheelModTrackWidth', stanced.value)
             };
-            if(stanced.id=4){
+            if(stanced.id==4){
                 vehicle.setStreamSyncedMeta('wheelModTyreRadius', stanced.value)
             };
-            if(stanced.id=5){
+            if(stanced.id==5){
                 vehicle.setStreamSyncedMeta('wheelModTyreWidth', stanced.value)
             };
         } catch (err) {}
@@ -283,12 +284,25 @@ export function getMods(vehicle: alt.Vehicle): Array<IVehicleMod> {
 export function getWheels(vehicle: alt.Vehicle): Array<IVehicleModWheels> {
     const mods: Array<IVehicleModWheels> = [];
 
-    for (let i = 0; i < 13; i++) {
+    // for (let i = 0; i < 13; i++) {
         try {
-            const value = vehicle.getMod(i);
-            mods.push({ id: i, value });
+            const value = vehicle.getMod(23);
+            mods.push({ id: 0, value });
+            mods.push({ id: 1, value });
+            mods.push({ id: 2, value });
+            mods.push({ id: 3, value });
+            mods.push({ id: 4, value });
+            mods.push({ id: 5, value });
+            mods.push({ id: 6, value });
+            mods.push({ id: 7, value });
+            mods.push({ id: 8, value });
+            mods.push({ id: 9, value });
+            mods.push({ id: 10, value });
+            mods.push({ id: 11, value });
+            mods.push({ id: 12, value });
+            mods.push({ id: 13, value });
         } catch (err) {}
-    }
+    // }
 
     return mods;
 }
@@ -296,36 +310,23 @@ export function getWheels(vehicle: alt.Vehicle): Array<IVehicleModWheels> {
 export function getStance(vehicle: alt.Vehicle): Array<IVehicleModStance> {
     const stance: Array<IVehicleModStance> = [];
 
-    for (let i = 0; i < 6; i++) {
+    
+    // for (let i = 0; i < 5; ++i) {
         try {
-            for (let id = 0; id < 5; ++id) {
-                if(id=0){
-                    let value = vehicle.getStreamSyncedMeta('wheelModCamber') as number
-                    stance.push({id, value});
-                };
-                if(id=1){
-                    let value = vehicle.getStreamSyncedMeta('wheelModHeight') as number
-                    stance.push({id, value});
-                };
-                if(id=2){
-                    let value = vehicle.getStreamSyncedMeta('wheelModRimRadius') as number
-                    stance.push({id, value});
-                };
-                if(id=3){
-                    let value = vehicle.getStreamSyncedMeta('wheelModTrackWidth') as number
-                    stance.push({id, value});
-                };
-                if(id=4){
-                    let value = vehicle.getStreamSyncedMeta('wheelModTyreRadius') as number
-                    stance.push({id, value});
-                };
-                if(id=5){
-                    let value = vehicle.getStreamSyncedMeta('wheelModTyreWidth') as number
-                    stance.push({id, value});
-                };
-            }
+            let value0 = vehicle.getStreamSyncedMeta('wheelModCamber') as number
+            stance.push({id:0, value:value0});
+            let value1 = vehicle.getStreamSyncedMeta('wheelModHeight') as number
+            stance.push({id:1, value:value1});
+            let value2 = vehicle.getStreamSyncedMeta('wheelModRimRadius') as number
+            stance.push({id:2, value:value2});
+            let value3 = vehicle.getStreamSyncedMeta('wheelModTrackWidth') as number
+            stance.push({id:3, value:value3});
+            let value4 = vehicle.getStreamSyncedMeta('wheelModTyreRadius') as number
+            stance.push({id:4, value:value4});
+            let value5 = vehicle.getStreamSyncedMeta('wheelModTyreWidth') as number
+            stance.push({id:5, value:value5});
         } catch (err) {}
-    }
+    // } 
 
     return stance;
 }
