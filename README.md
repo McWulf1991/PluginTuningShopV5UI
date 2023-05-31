@@ -2,7 +2,7 @@
 
 tuning.ts : liegt in 'src/core/server/vehicle' und beinhaltet neue funktionen bzgl. des Tunings von Stance und Wheels, zum sichern in der Datenbank.
 
-vehicleMod.ts & vehicleMod[].ts : liegen in 'src/core/shared/interface' und beinhalten Interfaces die es nicht in den shared-Ordner des Cripts geschafft haben.
+vehicleMod[].ts : liegen in 'src/core/shared/interface' und beinhalten Interfaces die es nicht in den shared-Ordner des Scripts geschafft haben.
 
 Aktivierung: mit 'Shift + F4' wird das Menü geöffnet.
 
@@ -22,3 +22,5 @@ vertices: [
 ],
 
 Update-Tuning und Laden beim Starten des Servers funktioniert noch nicht entsprechend. Fixes kommen...
+
+Leider war ich dazu noch nicht in der Lage auch entsprechende Weichen zustellen für den Core-Change, aber Stand jetzt: Fahrzeug lässt sich Tunen, solange man nicht auf den Buy-Button drückt :)
